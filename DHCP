@@ -1,0 +1,28 @@
+# Script to configure DHCP clients on MikroTik CHR
+
+# Setting up DHCP client on ether1 (connected to NAT)
+/ip dhcp-client add interface=ether1 disabled=no
+
+# Setting up DHCP client on ether2 (connected to Cloud/USB Ethernet adapter)
+/ip dhcp-client add interface=ether2 disabled=no
+
+# Print the DHCP client status
+/ip dhcp-client print
+
+# Script to configure firewall rules on MikroTik CHR for network convergence
+
+# Set up firewall filter rules to accept incoming connections on ether1 and ether2
+/ip firewall filter add chain=input in-interface=ether1 action=accept
+/ip firewall filter add chain=input in-interface=ether2 action=accept
+
+# Set up firewall filter rules to allow outgoing connections from ether1 and ether2
+/ip firewall filter add chain=output out-interface=ether1 action=accept
+/ip firewall filter add chain=output out-interface=ether2 action=accept
+
+# Set up firewall NAT rules to masquerade outbound traffic from ether1 and ether2 to allow internet access
+/ip firewall nat add chain=srcnat out-interface=ether1 action=masquerade
+/ip firewall nat add chain=srcnat out-interface=ether2 action=masquerade
+
+# Print the firewall rules to confirm they are configured correctly
+/ip firewall filter print
+/ip firewall nat print

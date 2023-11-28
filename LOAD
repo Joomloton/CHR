@@ -1,0 +1,25 @@
+# Script to configure load balancing on MikroTik CHR
+
+# Mark the traffic coming from the first network
+/ip firewall mangle
+add chain=input in-interface=ether1 action=mark-connection new-connection-mark=conn1
+add chain=output connection-mark=conn1 action=mark-routing new-routing-mark=route1
+
+# Mark the traffic coming from the second network
+add chain=input in-interface=ether2 action=mark-connection new-connection-mark=conn2
+add chain=output connection-mark=conn2 action=mark-routing new-routing-mark=route2
+
+# Create two IP routes, each with its own routing mark
+/ip route
+add dst-address=0.0.0.0/0 gateway=ether1 routing-mark=route1
+add dst-address=0.0.0.0/0 gateway=ether2 routing-mark=route2
+
+# Add default route with equal cost to both gateways for load balancing
+add dst-address=0.0.0.0/0 gateway=ether1,ether2 check-gateway=ping
+
+# The last command uses both ether1 and ether2 as default gateways with equal cost,
+# which enables simple round-robin load balancing. The 'check-gateway=ping' option
+# ensures that the route is only used if the gateway is reachable.
+
+# Print the routing table to confirm configuration
+/ip route print
